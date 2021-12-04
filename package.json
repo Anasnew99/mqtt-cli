@@ -1,10 +1,14 @@
 {
-  "name": "mqtt-cli",
+  "name": "mqtt-client-cli",
   "version": "1.0.0",
   "description": "MQTT Client CLI",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --watch ./src -e ts --exec ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc"
   },
   "author": "Anas Aneeque",
   "license": "ISC",
@@ -15,5 +19,9 @@
   },
   "dependencies": {
     "mqtt": "^4.2.8"
+  },
+  "bin": {
+    "mcc": "dist/index.js",
+    "mqtt-client-cli": "dist/index.js"
   }
 }
