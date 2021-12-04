@@ -133,7 +133,6 @@ process.stdin.on("data", function (data) {
 
     default:
       errorMessage(getM("COMMAND", "Unknown"));
-    // console.error("Unknown command");
   }
 });
 RecieverClient.on("connect", () => {
