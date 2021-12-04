@@ -156,7 +156,7 @@ RecieverClient.on("connect", () => {
 });
 
 RecieverClient.on("message", (topic, message) => {
-  successMessage(`Incoming Message: '${topic}'@'${message.toString()}`);
+  successMessage(getM("INCOMING MESSAGE", getTAndM(topic, message.toString())));
 });
 
 RecieverClient.on("reconnect", () => {
