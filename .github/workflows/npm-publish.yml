@@ -5,7 +5,7 @@ name: Node.js Package Published to NPM
 
 on:
   release:
-    types: [created, updated]
+    types: [created, edited]
 
 jobs:
   publish-npm:

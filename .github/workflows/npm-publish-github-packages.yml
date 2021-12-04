@@ -5,7 +5,7 @@ name: Node.js Package published to Github Packages
 
 on:
   release:
-    types: [created, updated]
+    types: [created, edited]
 
 jobs:
   publish-gpr:
