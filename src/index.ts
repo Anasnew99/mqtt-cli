@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import mqtt from "mqtt";
-const args = process.argv;
-const RecieverClient = mqtt.connect(args[2], { keepalive: 0 });
+import { URL } from "url";
 var timeInterval: null | NodeJS.Timeout = null;
 var startTime: null | number = null;
 
@@ -49,7 +48,7 @@ const exitProcess = function () {
   process.exit(0);
 };
 
-const subscribe = function (topic: string) {
+const subscribe = function (topic: string, RecieverClient: mqtt.MqttClient) {
   topic = sanitize(topic);
   if (RecieverClient.connected) {
     if (topic) {
@@ -68,7 +67,11 @@ const subscribe = function (topic: string) {
   }
 };
 
-const publish = function (topic: string, message: string) {
+const publish = function (
+  topic: string,
+  message: string,
+  RecieverClient: mqtt.MqttClient
+) {
   topic = sanitize(topic);
   message = sanitize(message);
   if (RecieverClient.connected) {
@@ -112,73 +115,87 @@ const showConnectDuration = (endTime: number = new Date().getTime()) => {
   return;
 };
 
-infoMessage(getM("\nNOTE", "Press e to exit anytime"));
+export const connectMQTT = function (brokerURL: string) {
+  try {
+    const url = new URL(brokerURL);
+    console.log(url);
+    const RecieverClient = mqtt.connect(brokerURL, { keepalive: 0 });
 
-process.stdin.on("data", function (data) {
-  const [basecmd = "", topic = "", message = ""] =
-    data
-      .toString()
-      .trim()
-      .match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+    infoMessage(getM("\nNOTE", "Press e to exit anytime"));
 
-  switch (basecmd) {
-    case "sub":
-      return subscribe(topic);
+    process.stdin.on("data", function (data) {
+      const [basecmd = "", topic = "", message = ""] =
+        data
+          .toString()
+          .trim()
+          .match(/(?:[^\s"]+|"[^"]*")+/g) || [];
 
-    case "pub":
-      return publish(topic, message);
+      switch (basecmd) {
+        case "sub":
+          return subscribe(topic, RecieverClient);
 
-    case "e":
-      return exitProcess();
+        case "pub":
+          return publish(topic, message, RecieverClient);
 
-    default:
-      errorMessage(getM("COMMAND", "Unknown"));
-  }
-});
-RecieverClient.on("connect", () => {
-  successMessage(getNetworkChange("Connected"));
-  startTime = new Date().getTime();
-  console.log(
-    "Start writing commands: \nsub <TOPIC> : Subscribe a topic. \npub <TOPIC> <MESSAGE>: Publish a message to the topic\ne: Exit The Process\n"
-  );
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
-  timeInterval = setInterval(() => {
-    if (RecieverClient.connected) {
-      RecieverClient.publish("/ping_req_sys", "");
-    } else {
+        case "e":
+          return exitProcess();
+
+        default:
+          errorMessage(getM("COMMAND", "Unknown"));
+      }
+    });
+    RecieverClient.on("connect", () => {
+      successMessage(getNetworkChange("Connected"));
+      startTime = new Date().getTime();
+      console.log(
+        "Start writing commands: \nsub <TOPIC> : Subscribe a topic. \npub <TOPIC> <MESSAGE>: Publish a message to the topic\ne: Exit The Process\n"
+      );
       if (timeInterval) {
         clearInterval(timeInterval);
       }
-    }
-  }, 3000);
-});
+      timeInterval = setInterval(() => {
+        if (RecieverClient.connected) {
+          RecieverClient.publish("/ping_req_sys", "");
+        } else {
+          if (timeInterval) {
+            clearInterval(timeInterval);
+          }
+        }
+      }, 3000);
+    });
 
-RecieverClient.on("message", (topic, message) => {
-  successMessage(getM("INCOMING MESSAGE", getTAndM(topic, message.toString())));
-});
+    RecieverClient.on("message", (topic, message) => {
+      successMessage(
+        getM("INCOMING MESSAGE", getTAndM(topic, message.toString()))
+      );
+    });
 
-RecieverClient.on("reconnect", () => {
-  infoMessage(getNetworkChange("Reconnect"));
-});
+    RecieverClient.on("reconnect", () => {
+      infoMessage(getNetworkChange("Reconnect"));
+    });
 
-RecieverClient.on("offline", () => {
-  warningMessage(getNetworkChange("Offline"));
-  showConnectDuration();
-});
+    RecieverClient.on("offline", () => {
+      warningMessage(getNetworkChange("Offline"));
+      showConnectDuration();
+    });
 
-RecieverClient.on("closed", () => {
-  warningMessage(getNetworkChange("Closed"));
-  showConnectDuration();
-});
+    RecieverClient.on("closed", () => {
+      warningMessage(getNetworkChange("Closed"));
+      showConnectDuration();
+    });
 
-RecieverClient.on("disconnect", () => {
-  infoMessage(getNetworkChange("Disconnect"));
-  showConnectDuration();
-});
+    RecieverClient.on("disconnect", () => {
+      infoMessage(getNetworkChange("Disconnect"));
+      showConnectDuration();
+    });
 
-RecieverClient.on("error", (error) => {
-  errorMessage(getNetworkChange("Error"));
-  showConnectDuration();
-});
+    RecieverClient.on("error", (error) => {
+      errorMessage(getNetworkChange("Error"));
+      showConnectDuration();
+    });
+  } catch (error) {
+    errorMessage(getM("BROKER URL", "Invalid"));
+  }
+};
+
+connectMQTT(process.argv[2]);
