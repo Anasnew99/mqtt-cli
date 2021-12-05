@@ -23,5 +23,13 @@
   "bin": {
     "mcc": "dist/index.js",
     "mqtt-client-cli": "dist/index.js"
-  }
+  },
+  "keywords": [
+    "iot",
+    "mqtt",
+    "mqtt-client-cli",
+    "mqtt-client",
+    "cli-based-tool",
+    "nodejs"
+  ]
 }

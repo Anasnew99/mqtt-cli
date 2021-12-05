@@ -6,6 +6,8 @@
 
 > This library is written for Node.js
 
+> Written in typescript.
+
 # Features
 
 - Connect to MQTT Server using broker url.
