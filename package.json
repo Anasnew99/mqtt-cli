@@ -1,6 +1,6 @@
 {
   "name": "mqtt-client-cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MQTT Client CLI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
