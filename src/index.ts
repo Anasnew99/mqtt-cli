@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env ts-node
 import mqtt from "mqtt";
 import { URL } from "url";
 var timeInterval: null | NodeJS.Timeout = null;
